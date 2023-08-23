@@ -1,0 +1,29 @@
+{
+  "name": "electron-downloader",
+  "version": "1.0.0",
+  "description": "ファイルダウンローダー",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "author": "ten2",
+  "license": "ISC",
+  "devDependencies": {
+    "@electron-forge/cli": "^6.2.1",
+    "@electron-forge/maker-deb": "^6.2.1",
+    "@electron-forge/maker-rpm": "^6.2.1",
+    "@electron-forge/maker-squirrel": "^6.2.1",
+    "@electron-forge/maker-zip": "^6.2.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^6.2.1",
+    "electron": "^25.3.1"
+  },
+  "dependencies": {
+    "electron-dl": "^3.5.0",
+    "electron-squirrel-startup": "^1.0.0",
+    "electron-updater": "^6.1.1",
+    "update-electron-app": "^2.0.1"
+  }
+}
