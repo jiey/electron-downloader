@@ -1,44 +1,50 @@
 // アプリケーション作成用のモジュールを読み込み
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
-const { autoUpdater } = require('electron-updater');
+// const { autoUpdater } = require('update-electron-app');
 const {download} = require('electron-dl');
 const path = require('path');
 const fs = require('fs');
-require('update-electron-app')()
+require('update-electron-app')({
+    repo: 'jiey/electron-downloader',
+    updateInterval: '1 hour',
+    logger: require('electron-log')
+})
 
 // メインウィンドウ
 let mainWindow;
 let download_interrupt_flag = false; // ダウンロード中止
 
 const createWindow = () => {
-  // メインウィンドウを作成します
-  mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 1000,
-    webPreferences: {
-      // プリロードスクリプトは、レンダラープロセスが読み込まれる前に実行され、
-      // レンダラーのグローバル（window や document など）と Node.js 環境の両方にアクセスできます。
-      preload: path.join(__dirname, "preload.js"),
-    },
-  });
+    // メインウィンドウを作成します
+    mainWindow = new BrowserWindow({
+        width: 1400,
+        height: 1000,
+        webPreferences: {
+        // プリロードスクリプトは、レンダラープロセスが読み込まれる前に実行され、
+        // レンダラーのグローバル（window や document など）と Node.js 環境の両方にアクセスできます。
+        preload: path.join(__dirname, "preload.js"),
+        },
+    });
 
-  // メインウィンドウに表示するURLを指定します
-  // （今回はmain.jsと同じディレクトリのindex.html）
-  mainWindow.loadFile("src/index.html");
+    // メインウィンドウに表示するURLを指定します
+    // （今回はmain.jsと同じディレクトリのindex.html）
+    mainWindow.loadFile("src/index.html");
 
-  // デベロッパーツールの起動
-  mainWindow.webContents.openDevTools();
+    // デベロッパーツールの起動
+    // mainWindow.webContents.openDevTools();
 
-  // メインウィンドウが閉じられたときの処理
-  mainWindow.on("closed", () => {
-    mainWindow = null;
-  });
+    // 自動アップデートの有効化
+    // autoUpdater.checkForUpdates();
+
+    // メインウィンドウが閉じられたときの処理
+    mainWindow.on("closed", () => {
+        mainWindow = null;
+    });
 };
 
 //  初期化が完了した時の処理
 app.whenReady().then(() => {
   createWindow();
-  autoUpdater.checkForUpdatesAndNotify();
 
   // アプリケーションがアクティブになった時の処理(Macだと、Dockがクリックされた時）
   app.on("activate", () => {
@@ -120,15 +126,3 @@ console.log(fullpath_filename);
     // レスポンス返却
     event.sender.send('download-complete', false); // 正常完了
 })
-
-autoUpdater.on('update-available', () => {
-    mainWindow.webContents.send('update_available');
-});
-
-autoUpdater.on('update-downloaded', () => {
-    mainWindow.webContents.send('update_downloaded');
-});
-
-ipcMain.on('restart_app', () => {
-    autoUpdater.quitAndInstall();
-});

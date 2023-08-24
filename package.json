@@ -1,6 +1,6 @@
 {
   "name": "electron-downloader",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "ファイルダウンローダー",
   "main": "src/index.js",
   "scripts": {
@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "electron-dl": "^3.5.0",
+    "electron-log": "^4.4.8",
     "electron-squirrel-startup": "^1.0.0",
     "electron-updater": "^6.1.1",
     "update-electron-app": "^2.0.1"
