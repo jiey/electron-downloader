@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .table {
+            display: grid;
+            grid-template-columns: 1.0fr 1fr 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
+            grid-auto-flow: column;
+            gap: 0px 0px;
+            column-gap: 1px;
+            row-gap: 1px;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            background-color: #eee;
+            text-align: center;
+            align-items: stretch;
+        }
+        .table > section {
+            border: 1px solid #ccc;
+        }
+        .contents > div {
+            background-color: white;
+            padding: 20px;
+        }
+        .header > div {
+            background-color: #dde;
+            padding: 20px;
+        }
+        .header {
+            display: none;
+        }
+        .table:first-child .header,
+        .contents {
+            display: contents;
+        }
+
+        .grid-table {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border: 1px solid black;
+            gap: 1px;
+        }
+
+        .grid-cell {
+            padding: 8px;
+            border: 1px solid black;
+            background-color: #fff;
+        }
+
+        .grid-cell:nth-child(-n+4) {
+            font-weight: bold;
+        }
+
+        .grid-cell:nth-child(4n+1) {
+            font-weight: bold;
+            background-color: #e9e9e9;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="grid-table">
+        <div class="grid-cell"></div>
+        <div class="grid-cell">商品管理番号</div>
+        <div class="grid-cell">商品番号</div>
+        <div class="grid-cell">価格</div>
+        <div class="grid-cell">ソムリエ＠ギフト</div>
+        <div class="grid-cell">goods-001</div>
+        <div class="grid-cell">goods-001-1</div>
+        <div class="grid-cell">100</div>
+        <div class="grid-cell">パティエ</div>
+        <div class="grid-cell">aoods-001</div>
+        <div class="grid-cell">goods-001-a</div>
+        <div class="grid-cell">290</div>
+        <div class="grid-cell">家具のソムリエ</div>
+        <div class="grid-cell">coods-001</div>
+        <div class="grid-cell">goods-001-1</div>
+        <div class="grid-cell">600</div>
+    </div>
+
+    <!-- <table border="1">
+        <tr>
+            <th></th>
+            <td>ソムリエ＠ギフト</td>
+            <td>パティエ</td>
+            <td>家具のソムリエ</td>
+        </tr>
+        <tr>
+            <th>商品管理番号</th>
+            <td>goods-001</td>
+            <td>aoods-001</td>
+            <td>coods-001</td>
+        </tr>
+        <tr>
+            <th>商品番号</th>
+            <td>goods-001-1</td>
+            <td>goods-001-a</td>
+            <td>goods-001-1</td>
+        </tr>
+        <tr>
+            <th>価格</th>
+            <td>100</td>
+            <td>290</td>
+            <td>600</td>
+        </tr>
+    </table> -->
+
+    <!-- <div class="table">
+        <section class="header">
+            <div>ショップ名</div>
+            <div>商品管理番号</div>
+            <div>商品番号</div>
+            <div>商品名</div>
+            <div>価格</div>
+        </section>
+
+        <section id="r_somurie" class="contents">
+            <div>ソムリエ＠ギフト</div>
+            <div>goods-001</div>
+            <div>goods-001-1</div>
+            <div>最高の家電</div>
+            <div>11,000</div>
+        </section>
+    </div>
+
+    <div class="table">
+        <section class="header">
+            <div>ショップ名</div>
+            <div>商品管理番号</div>
+            <div>商品番号</div>
+            <div>商品名</div>
+            <div>価格</div>
+        </section>
+
+        <section id="r_patie" class="contents">
+            <div>パティエ</div>
+            <div>goods-001</div>
+            <div>goods-001-1</div>
+            <div>最高の家電</div>
+            <div>11,000</div>
+        </section>
+    </div>
+
+    <div class="table">
+        <section class="header">
+            <div>ショップ名</div>
+            <div>商品管理番号</div>
+            <div>商品番号</div>
+            <div>商品名</div>
+            <div>価格</div>
+        </section>
+
+        <section id="r_kagu" class="contents">
+            <div>家具のソムリエ</div>
+            <div>goods-001</div>
+            <div>goods-001-1</div>
+            <div>最高の家電</div>
+            <div>11,000</div>
+        </section>
+    </div>
+
+    <div class="table">
+        <section class="header">
+            <div>ショップ名</div>
+            <div>商品管理番号</div>
+            <div>商品番号</div>
+            <div>商品名</div>
+            <div>価格</div>
+        </section>
+
+        <section id="r_babuuu" class="contents">
+            <div>babuuu.</div>
+            <div>goods-001</div>
+            <div>goods-001-1</div>
+            <div>最高の家電</div>
+            <div>11,000</div>
+        </section>
+    </div> -->
+</body>
+</html>

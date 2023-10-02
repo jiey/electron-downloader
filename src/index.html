@@ -3,7 +3,7 @@
     <meta charset="UTF-8"/>
     <!-- https://developer.mozilla.org/ja/docs/Web/HTTP/CSP -->
     <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'"/> -->
-    <title>ファイル存在チェック＆ファイルダウンロード</title>
+    <title>KiWi2 メインメニュー</title>
     <style>
         h1 {
             font-size: 1.4rem;
@@ -18,58 +18,29 @@
             width: 1200px;
             margin: 0 auto;
         }
-        textarea {
+        input[type=text], textarea, button {
             border: 1px solid #eee;
         }
         textarea#dl_target {
             width: 100%;
             height: 100px;
         }
-        button {
+
+        input#dl_path {
+            width: 600px;
+        }
+        #menu > button {
             font-size: 18px;
             width: 200px;
             height: 40px;
-            border: 1px solid #eee;
-        }
-        button#dl_button {
             background-color: #76c;
             color: #eee;
         }
-        div#menu {
+        #menu {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
             padding: 20px 160px;
-        }
-
-        div#result {
-            display: flex;
-            flex-wrap: wrap;
-        }
-
-        div.result_list_wrap {
-            width: 100%;
-        }
-
-        div.result_list_wrap > textarea {
-            width: 100%;
-            height: 140px;
-            font-size: 0.7rem;
-        }
-
-        #progress-container {
-            width: 100%;
-            height: 20px;
-            background-color: #f0f0f0;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 20px;
-        }
-
-        #progress-bar {
-            width: 0;
-            height: 100%;
-            background-color: #007bff;
-            transition: width 0.3s;
         }
 </style>
 </head>
@@ -77,43 +48,13 @@
 <body>
 
 <main>
-    <h1>ファイル存在チェック＆ファイルダウンロード</h1>
-
-    <h2>ダウンロードURLをここに貼り付け</h2>
-    <textarea id="dl_target" placeholder="ここにURLを貼り付ける"></textarea>
-
-    <div id="menu">
-        <button id="dl_button">ダウンロード開始</button>
-    </div>
-
-    <hr>
-
-    <h2>ダウンロード状況</h2>
-    <section>
-        <h3 id="status">全体の状況：ダウンロード待機中</h3>
-        <div id="progress-container">
-            <div id="progress-bar"></div>
-        </div>
-        <p id="all_percent"></p>
+    <h2>メインメニュー</h2>
+    <section id="menu">
+        <button id="item_edit">商品編集</button>
+        <button id="downloader">ダウンロード</button>
     </section>
-
-    <div id="result">
-        <div id="success_files" class="result_list_wrap">
-            <h3>ダウンロード成功</h3>
-            <textarea id="success_box" placeholder="ここは正常終了URL"></textarea>
-        </div>
-        <div id="error_files" class="result_list_wrap">
-            <h3>ダウンロード失敗</h3>
-            <textarea id="error_box" placeholder="ここは異常終了URL"></textarea>
-        </div>
-    </div>
-
-    <!-- <section id="processing_area">
-        <h2>ダウンロード対象</h2>
-        <div id="waiting_zone"></div>
-    </section> -->
 </main>
 
-<script src="./renderer.js"></script>
+<script src="./index_renderer.js"></script>
 </body>
 </html>

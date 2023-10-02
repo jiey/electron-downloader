@@ -1,0 +1,249 @@
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <!-- https://developer.mozilla.org/ja/docs/Web/HTTP/CSP -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'"/> -->
+    <title>ファイル存在チェック＆ファイルダウンロード</title>
+    <style>
+        h1 {
+            font-size: 1.4rem;
+        }
+        h2 {
+            font-size: 1.2rem;
+        }
+        h3 {
+            font-size: 1.1rem;
+        }
+        main {
+            width: 1200px;
+            margin: 0 auto;
+        }
+        input[type=text], textarea, button {
+            border: 1px solid #eee;
+        }
+        textarea#dl_target {
+            width: 100%;
+            height: 100px;
+        }
+
+        input#dl_path {
+            width: 600px;
+        }
+        button#dl_button {
+            font-size: 18px;
+            width: 200px;
+            height: 40px;
+            background-color: #76c;
+            color: #eee;
+        }
+        div#menu {
+            display: flex;
+            justify-content: center;
+            padding: 20px 160px;
+        }
+
+        div#result {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        div.result_list_wrap {
+            width: 100%;
+        }
+
+        div.result_list_wrap > textarea {
+            width: 100%;
+            height: 140px;
+            font-size: 0.7rem;
+        }
+
+        #progress-container {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        #progress-bar {
+            width: 0;
+            height: 100%;
+            background-color: #007bff;
+        }
+
+        #progress-bar.moving {
+            transition: width 0.3s;
+        }
+
+        #header_settings {
+            display: flex;
+            gap: 20px;
+        }
+
+        .checkbox_obj {
+            padding: 0px 8px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .checkbox_real {
+            margin: 0;
+            width: 0;
+            opacity: 0;
+        }
+        .checkbox_obj:hover{
+           background: rgba(0,0,0,.05) !important;
+        }
+        .checkbox_obj:hover > .checkbox_dummy{
+            transform: scale(1.1);
+        }
+        .checkbox_real:focus + .checkbox_dummy{
+            transform: scale(1.1);
+        }
+        .checkbox_real:checked + .checkbox_dummy {
+            background: rgba(107, 26, 250, 1);
+        }
+        .checkbox_real:checked + .checkbox_dummy::before {
+            content: "";
+            display: block;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 35%;
+            height: 2px;
+            border-radius: 1px;
+            transform: translate(-3px, 2px) rotateZ(-135deg);
+            transform-origin: 1px 1px;
+            background: #FFFFFF;
+        }
+        .checkbox_real:checked + .checkbox_dummy::after {
+            content: "";
+            display: block;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 70%;
+            height: 2px;
+            border-radius: 1px;
+            transform: translate(-3px, 2px) rotateZ(-45deg);
+            transform-origin: 1px 1px;
+            background: #FFFFFF;
+        }
+        .checkbox_dummy {
+            position: relative;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 16px;
+            height: 16px;
+            border: solid 1px transparent;
+            background: rgba(0, 0, 0, .15);
+            border-radius: 50%;
+            transition: all .15s linear;
+        }
+        .checkbox_label {
+            margin-left: 6px;
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        #fixed_item_code, .toggle {
+            display: flex;
+        }
+</style>
+</head>
+
+<body>
+
+<main>
+    <!-- <h1>ファイル存在チェック＆ファイルダウンロード</h1> -->
+    <section id="header_settings">
+        <div>
+            <h2>ダウンロード先フォルダ設定</h2>
+            <div>
+                <input type="text" id="dl_path">
+                <button type="button" id="dl_path_btn">参照</button>
+            </div>
+        </div>
+        <div>
+            <h2>画像の保存方法</h2>
+            <div class="toggle">
+                <label class="checkbox_obj">
+                    <input type="checkbox" name="is_create_folder" id="is_create_folder" class="checkbox_real" checked>
+                    <span class="checkbox_dummy"></span>
+                    <span class="checkbox_label">フォルダ分けする</span>
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <hr>
+    <h2>楽天商品画像URL取得</h2>
+    <section id="fixed_item_code">
+        <div class="toggle">
+            <label class="checkbox_obj">
+                <input type="checkbox" name="item_target" class="checkbox_real" value="r_somurie" checked>
+                <span class="checkbox_dummy"></span>
+                <span class="checkbox_label">ソムリエ</span>
+            </label>
+            <label class="checkbox_obj">
+                <input type="checkbox" name="item_target" class="checkbox_real" value="r_patie">
+                <span class="checkbox_dummy"></span>
+                <span class="checkbox_label">パティエ</span>
+            </label>
+            <label class="checkbox_obj">
+                <input type="checkbox" name="item_target" class="checkbox_real" value="r_kagu">
+                <span class="checkbox_dummy"></span>
+                <span class="checkbox_label">家具のソムリエ</span>
+            </label>
+            <label class="checkbox_obj">
+                <input type="checkbox" name="item_target" class="checkbox_real" value="r_babuuu">
+                <span class="checkbox_dummy"></span>
+                <span class="checkbox_label">babuuu.</span>
+            </label>
+        </div>
+        <div>
+            <input type="text" id="r_item_code">
+            <button type="button" id="r_image_get">画像取得</button>
+        </div>
+    </section>
+
+    <h2>ダウンロードURLをここに貼り付け</h2>
+    <textarea id="dl_target" placeholder="ここにURLを貼り付ける"></textarea>
+
+    <div id="menu">
+        <button id="dl_button">ダウンロード開始</button>
+    </div>
+
+    <hr>
+
+    <h2>ダウンロード状況</h2>
+    <section>
+        <h3 id="status">全体の状況：ダウンロード待機中</h3>
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <p id="all_percent"></p>
+    </section>
+
+    <div id="result">
+        <div id="success_files" class="result_list_wrap">
+            <h3>ダウンロード成功</h3>
+            <textarea id="success_box" placeholder="ここは正常終了URL"></textarea>
+        </div>
+        <div id="error_files" class="result_list_wrap">
+            <h3>ダウンロード失敗</h3>
+            <textarea id="error_box" placeholder="ここは異常終了URL"></textarea>
+        </div>
+    </div>
+
+    <!-- <section id="processing_area">
+        <h2>ダウンロード対象</h2>
+        <div id="waiting_zone"></div>
+    </section> -->
+</main>
+
+<script src="./downloader_renderer.js"></script>
+</body>
+</html>
