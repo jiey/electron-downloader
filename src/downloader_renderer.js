@@ -117,6 +117,12 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
     })
 
+    // 認証エラー発生通知
+    window.electronAPI.on('auth_error', (event, url)=>{
+        console.log("auth_error" + url);
+        status_area.textContent = `認証エラー発生：${url}`;
+    });
+
     // 1件ダウンロード開始
     window.electronAPI.on('download-start', (event, url)=>{
         console.log("download-start" + url);
@@ -153,39 +159,68 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     // 楽天画像取得ボタン押下
     const r_image_get = document.querySelector('button#r_image_get');
-    const r_item_code_obj = document.querySelector('input#r_item_code');
+    const r_item_code_obj = document.querySelector('textarea#r_item_code');
     r_image_get.addEventListener('click', async () => {
-        let r_item_code = r_item_code_obj.value;
-        r_item_code = r_item_code.trim(); // 前後の空白があれば削除
-        if (r_item_code === '') return;
+        let r_item_codes = r_item_code_obj.value;
+
+        // 改行ごとに商品管理番号が入っている
+        // スペース区切りまたは改行区切りに対応する(ただし空文字は対象外)
+        const dl_item_codes = r_item_codes.split(/\n| /).filter(target => target.trim() !== "");
+
+        // 重複URLを削除
+        const set = new Set(dl_item_codes); // Setに入れて
+        const new_dl_item_codes = [...set]; // 配列に戻すだけで重複削除される 
 
         // 対象モールを取得
         const shop_targets = new Array();
-        const item_targets = document.querySelectorAll('[name="item_target"]');
+        const item_targets = document.querySelectorAll('[name="item_target"]:checked');
         for (const item_target of item_targets) {
-            if (item_target.checked) {
+            // if (item_target.checked) {
                 const shop_target = item_target.value;
                 shop_targets.push(shop_target);
-            }
+            // }
         }
 
         if (shop_targets.length == 0) {
             return;
         }
 
-        // 商品画像取得
-        try {
-            const item_images = await window.electronAPI.getImage(r_item_code, shop_targets);
-            // 改行区切りにしてテキストエリアに戻す
-            dl_target.value = item_images.join('\n');
-        }catch(err) {
-console.log(err);
-            if (/404/.test(err.message)) {
-                alert('その商品は見つかりませんでした：' + r_item_code);
-            }else{
-                alert('その他エラーが発生しました：' + err.code);
+        let image_get_status_obj = document.querySelector('#image_get_status');
+        // ステータスを更新
+        const status = "画像URLをAPIで取得中...";
+
+        let img_urls = "";
+        for(let i=0; i<new_dl_item_codes.length; i++) {
+            let r_item_code = new_dl_item_codes[i];
+            // ステータスを更新
+            image_get_status_obj.textContent = `${status}（${new_dl_item_codes.length - i}）`;
+
+            r_item_code = r_item_code.trim(); // 前後の空白があれば削除
+            if (r_item_code === '') continue;
+    
+            // 商品画像取得
+            try {
+                const item_images = await window.electronAPI.getImage(r_item_code, shop_targets);
+                // 改行区切りにしてテキストエリアに戻す
+                img_urls += item_images.join('\n');
+                img_urls += "\n";
+            }catch(err) {
+    console.log(err);
+                if (/404/.test(err.message)) {
+                    alert('その商品は見つかりませんでした：' + r_item_code);
+                }else if (/429/.test(err.message)) {
+                    // 多重接続エラー
+                    alert('接続大杉：' + r_item_code);
+                }else{
+                    alert('その他エラーが発生しました：' + err.code);
+                }
             }
+            dl_target.value = img_urls;
+
         }
+        // ステータスを更新
+        image_get_status_obj.textContent = "取得完了しました";
+
     });
 
 

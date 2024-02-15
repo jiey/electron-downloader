@@ -541,6 +541,7 @@ console.log(res.data);
             }catch(err) {
                 if(/401/.test(err.message)) {
                     // 認証エラー
+                    event.sender.send('auth_error', req_url); // 認証エラー通知
                     // プリザンターから最新のライセンスキーを取得してみる
                     await getRmsAPIInfo_from_pleasanter();
                     // 2回目のチャレンジ
@@ -595,6 +596,7 @@ console.log("serviceSecret:", serviceSecret);
             }catch(err) {
                 if(/401/.test(err.message)) {
                     // 認証エラー
+                    event.sender.send('auth_error', req_url); // 認証エラー通知
                     // プリザンターから最新のライセンスキーを取得してみる
                     await getRmsAPIInfo_from_pleasanter();
                     // 2回目のチャレンジ
@@ -656,6 +658,7 @@ console.log(res.data);
             }catch(err) {
                 if(/401/.test(err.message)) {
                     // 認証エラー
+                    event.sender.send('auth_error', req_url); // 認証エラー通知
                     // プリザンターから最新のライセンスキーを取得してみる
                     await getRmsAPIInfo_from_pleasanter();
                     // 2回目のチャレンジ
@@ -708,6 +711,7 @@ console.log(req_url);
         }catch(err) {
             if(/401/.test(err.message)) {
                 // 認証エラー
+                event.sender.send('auth_error', req_url); // 認証エラー通知
                 // プリザンターから最新のライセンスキーを取得してみる
                 await getRmsAPIInfo_from_pleasanter();
                 // 2回目のチャレンジ
@@ -769,6 +773,7 @@ console.log(req_url);
         }catch(err) {
             if(/401/.test(err.message)) {
                 // 認証エラー
+                event.sender.send('auth_error', req_url); // 認証エラー通知
                 // プリザンターから最新のライセンスキーを取得してみる
                 await getRmsAPIInfo_from_pleasanter();
                 // 2回目のチャレンジ
@@ -778,7 +783,7 @@ console.log(req_url);
                 continue;
             }else if (/429/.test(err.message)) {
                 // 同時接続数を超過
-                await sleep(500); // 1秒待機
+                await sleep(500); // 500ms待機
                 continue;
             }
             throw err;
@@ -823,6 +828,7 @@ ipcMain.handle('update-rakuten-item', async (event, r_item_code, post_data, shop
         }catch(err) {
             if(/401/.test(err.message)) {
                 // 認証エラー
+                event.sender.send('auth_error', req_url); // 認証エラー通知
                 // プリザンターから最新のライセンスキーを取得してみる
                 await getRmsAPIInfo_from_pleasanter();
                 // 2回目のチャレンジ
@@ -832,7 +838,7 @@ ipcMain.handle('update-rakuten-item', async (event, r_item_code, post_data, shop
                 continue;
             }else if (/429/.test(err.message)) {
                 // 同時接続数を超過
-                await sleep(500); // 1秒待機
+                await sleep(500); // 500ms待機
                 continue;
             }else{
                 result = err.response.data.errors[0];
@@ -878,6 +884,7 @@ console.log("serviceSecret:", serviceSecret);
         // 401の場合を含めて2回トライしてみる
         for(let try_count=0; try_count<2; try_count++) {
             try{
+                await sleep(150); // 150ms待機
                 const res = await axios.get(req_url, {
                     responseType: 'json',
                     headers: {
@@ -922,12 +929,14 @@ console.log("serviceSecret:", serviceSecret);
             }catch(err) {
                 if(/401/.test(err.message)) {
                     // 認証エラー
+                    event.sender.send('auth_error', req_url); // 認証エラー通知
                     // プリザンターから最新のライセンスキーを取得してみる
                     await getRmsAPIInfo_from_pleasanter();
                     // 2回目のチャレンジ
                     continue;
-                }else if (/404/.test(err.message)) {
-                    // 他のは取れてるかもなので、引き続き実行
+                }else if (/429/.test(err.message)) {
+                    // 同時接続数を超過
+                    await sleep(500); // 500ms待機
                     continue;
                 }
                 throw err;
