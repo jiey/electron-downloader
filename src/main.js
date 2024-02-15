@@ -1,5 +1,5 @@
 // アプリケーション作成用のモジュールを読み込み
-const { app, Menu, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const { app, Menu, BrowserWindow, ipcMain, dialog, shell, clipboard } = require('electron');
 // const { autoUpdater } = require('update-electron-app');
 const {download} = require('electron-dl');
 const path = require('path');
@@ -21,6 +21,8 @@ const { create } = require('domain');
 let mainWindow = null;
 let downloaderWindow = null;
 let itemEditWindow = null;
+let itemImageURLWindow = null;
+let previewWindow = null;
 let download_interrupt_flag = false; // ダウンロード中止
 
 // 実行環境がmacOSならtrue
@@ -33,18 +35,22 @@ const shop_info = {
     r_somurie: {
       shop_code: 'bellevie-harima',
       shop_name: 'ソムリエ＠ギフト',
+      shop_id: '215297',
     },
     r_patie: {
       shop_code: 'patie',
       shop_name: 'パティエ',
+      shop_id: '277407',
     },
     r_kagu: {
       shop_code: 'sommelier',
       shop_name: '家具のソムリエ',
+      shop_id: '333706',
     },
     r_babuuu: {
       shop_code: 'babuuu',
       shop_name: 'babuuu.',
+      shop_id: '422856',
     },
 };
 
@@ -284,15 +290,18 @@ const createWindow = () => {
 
 //  初期化が完了した時の処理
 app.whenReady().then(() => {
-  createWindow();
+    createWindow();
 
-  // アプリケーションがアクティブになった時の処理(Macだと、Dockがクリックされた時）
-  app.on("activate", () => {
-    // メインウィンドウが消えている場合は再度メインウィンドウを作成する
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
+    // すべてのショップ内カテゴリを取得しておく(T.B.D)
+
+
+    // アプリケーションがアクティブになった時の処理(Macだと、Dockがクリックされた時）
+    app.on("activate", () => {
+        // メインウィンドウが消えている場合は再度メインウィンドウを作成する
+        if (BrowserWindow.getAllWindows().length === 0) {
+            createWindow();
+        }
+    });
 });
 
 // 全てのウィンドウが閉じたときの処理
@@ -396,6 +405,39 @@ console.log(webapi_keys.webapi);
 
 // API ---------------
 // index_renderer.js
+// プレビュー表示
+ipcMain.on('open-preview', (event, content) => {
+    if (previewWindow) {
+        previewWindow.close();
+    }
+
+    previewWindow = new BrowserWindow({
+        width: 1600,
+        height: 1000,
+        webPreferences: {
+            preload: path.join(__dirname, 'preview_preload.js')
+        }
+    });
+
+    previewWindow.loadFile('src/preview.html');
+
+    // デベロッパーツールの起動
+    previewWindow.webContents.openDevTools();
+
+    previewWindow.webContents.on('did-finish-load', () => {
+        previewWindow.webContents.send('load-content', content);
+    });
+
+    previewWindow.on('closed', () => {
+        previewWindow = null;
+    });
+});
+
+// クリップボードにコピー
+ipcMain.on('copy-to-clipboard', (_, text) => {
+    clipboard.writeText(text);
+});
+
 // downloader画面
 ipcMain.on('show-downloader-window', () => {
     downloaderWindow = new BrowserWindow({
@@ -423,14 +465,41 @@ ipcMain.on('show-item-edit-window', () => {
         },
     });
 
+    // 画面最大化
+    itemEditWindow.maximize();
+
     itemEditWindow.loadFile("src/item_edit.html");
 
     itemEditWindow.webContents.setWindowOpenHandler(({ url }) => {
         if (url.startsWith('http')) {
             shell.openExternal(url)
+
+            // Windows用のコマンド（MacやLinuxでは異なるコマンドになる）
+            // const command = {
+            //     'chrome': `start chrome ${url}`,
+            //     'edge': `start msedge ${url}`,
+            //     'firefox': `start firefox ${url}`
+            // };
+
+            // require('child_process').exec(command[browser]);
         }
         return { action: 'deny' }
     })
+});
+
+// 商品画像csv変換画面
+ipcMain.on('show-item-image-url-window', () => {
+    itemImageURLWindow = new BrowserWindow({
+        width: 1400,
+        height: 1000,
+        webPreferences: {
+            // プリロードスクリプトは、レンダラープロセスが読み込まれる前に実行され、
+            // レンダラーのグローバル（window や document など）と Node.js 環境の両方にアクセスできます。
+            preload: path.join(__dirname, "preload.js"),
+        },
+    });
+
+    itemImageURLWindow.loadFile("src/rakuten_item_image_tools.html");
 });
 
 // 共通
@@ -545,13 +614,75 @@ console.log("serviceSecret:", serviceSecret);
 
 });
 
+ipcMain.handle('get-rakuten-category_mappings', async (event, r_item_code, shop_targets) => {
+    let result = new Object();
+
+    // ショップの数だけ回す
+    for(let shop_count = 0; shop_count < shop_targets.length; shop_count++) {
+        const shop_incode = shop_targets[shop_count];
+        // 楽天API呼び出し用パラメーター
+        const serviceSecret = webapi_keys.webapi[shop_incode].serviceSecret;//'SP215297_5sVPn5UuV6Akh7E7'
+        const licenseKey = webapi_keys.webapi[shop_incode].licenseKey;//'SL215297_gZkFagCVNKiCtBV3' // ３ヶ月ごとに変更あり
+
+console.log(shop_targets[shop_count]);
+console.log("serviceSecret:", serviceSecret);
+
+        const auth_string = Buffer.from(`${serviceSecret}:${licenseKey}`).toString('base64');
+
+        const req_url = `https://api.rms.rakuten.co.jp/es/2.0/categories/item-mappings/manage-numbers/${r_item_code}`;
+
+        // クエリパラメータを設定する
+        const queryParams = {
+            breadcrumb: true,
+            categoryfields: "TITLE"
+        };
+
+        // 401の場合を含めて2回トライしてみる
+        for(let try_count=0; try_count<2; try_count++) {
+            try{
+                const res = await axios.get(req_url, {
+                    responseType: 'json',
+                    headers: {
+                        'Authorization': `ESA ${auth_string}`
+                    },
+                    params: queryParams
+                });
+console.log(res.data);
+                // データ取得
+                result[shop_incode] = res.data;
+        
+                // ここまで来たら正常取得完了
+                break;
+            }catch(err) {
+                if(/401/.test(err.message)) {
+                    // 認証エラー
+                    // プリザンターから最新のライセンスキーを取得してみる
+                    await getRmsAPIInfo_from_pleasanter();
+                    // 2回目のチャレンジ
+                    continue;
+                }else if (/404/.test(err.message)) {
+                    // 他のは取れてるかもなので、引き続き実行
+                    continue;
+                }
+                throw err;
+            }
+        
+        }
+
+    }
+
+    return result;
+
+});
+
+
 // 在庫数取得(単品SKU)
 ipcMain.handle('get-rakuten-inventory', async (event, r_item_code, r_sku_code, shop_target) => {
     let result;
 
     // 楽天API呼び出し用パラメーター
-    const serviceSecret = webapi_keys.webapi[shop_target].serviceSecret;//'SP215297_5sVPn5UuV6Akh7E7'
-    const licenseKey = webapi_keys.webapi[shop_target].licenseKey;//'SL215297_gZkFagCVNKiCtBV3' // ３ヶ月ごとに変更あり
+    const serviceSecret = webapi_keys.webapi[shop_target].serviceSecret;
+    const licenseKey = webapi_keys.webapi[shop_target].licenseKey;
 
     const auth_string = Buffer.from(`${serviceSecret}:${licenseKey}`).toString('base64');
 
@@ -704,7 +835,6 @@ ipcMain.handle('update-rakuten-item', async (event, r_item_code, post_data, shop
                 await sleep(500); // 1秒待機
                 continue;
             }else{
-                // エラー発生時、1つ目のエラーを返す
                 result = err.response.data.errors[0];
             }
             // throw err;
@@ -768,8 +898,25 @@ console.log("serviceSecret:", serviceSecret);
                     }
                     result.push(img_url);
                 }
-        
-                console.log(res.data.variants);
+
+                // SKU画像取得
+                if (res.data.variants) {
+                    for(const key in res.data.variants) {
+                        const sku_images = res.data.variants[key].images;
+                        if (sku_images) {
+                            for(let i=0; i<sku_images.length; i++) {
+                                let img_url = "";
+                                if (sku_images[i].type === 'CABINET') {
+                                    img_url = `https://image.rakuten.co.jp/${shop_info[shop_incode].shop_code}/cabinet${sku_images[i].location}`;
+                                }else if (sku_images[i].type === 'GOLD') {
+                                    img_url = `https://www.rakuten.ne.jp/gold/${shop_info[shop_incode].shop_code}${sku_images[i].location}`;
+                                }
+                                result.push(img_url);
+                            }
+                        }
+                    }
+                }
+
                 // ここまで来たら正常取得完了
                 break;
             }catch(err) {
@@ -782,11 +929,8 @@ console.log("serviceSecret:", serviceSecret);
                 }else if (/404/.test(err.message)) {
                     // 他のは取れてるかもなので、引き続き実行
                     continue;
-                }else{
-                    // エラー発生時、1つ目のエラーを返す
-                    result = err.response.data.errors[0];
                 }
-                // throw err;
+                throw err;
             }
         
         }

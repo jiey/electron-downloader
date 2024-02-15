@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKU PJ対応商品画像ビューアー</title>
+    <style>
+        main {
+            display: flex;
+            gap: 50px;
+        }
+        main#old_new {
+            align-items: center;
+        }
+        textarea {
+            width: 600px;
+            height: 800px;
+        }
+        h2 {
+            font-size: 16px;
+        }
+        img {
+            width: 120px;
+            /* height: 120px; */
+        }
+        section.arrow {
+            font-size: 46px;
+        }
+
+        /*タブ切り替え全体のスタイル*/
+        .tabs {
+            margin-top: 50px;
+            padding-bottom: 40px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            margin: 0 auto;
+        }
+
+        /*タブのスタイル*/
+        .tab_item {
+            width: calc(100%/3);
+            height: 50px;
+            border-bottom: 3px solid #5ab4bd;
+            background-color: #d9d9d9;
+            line-height: 50px;
+            font-size: 16px;
+            text-align: center;
+            color: #565656;
+            display: block;
+            float: left;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .tab_item:hover {
+            opacity: 0.75;
+        }
+
+        /*ラジオボタンを全て消す*/
+        input[name="tab_item"] {
+            display: none;
+        }
+
+        /*タブ切り替えの中身のスタイル*/
+        .tab_content {
+            display: none;
+            padding: 40px 40px 0;
+            clear: both;
+            overflow: hidden;
+        }
+
+
+        /*選択されているタブのコンテンツのみを表示*/
+        #tab1:checked ~ #tab1_content,
+        #tab2:checked ~ #tab2_content {
+            display: block;
+        }
+
+        /*選択されているタブのスタイルを変える*/
+        .tabs input:checked + .tab_item {
+            background-color: #5ab4bd;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="tabs">
+        <input id="tab1" type="radio" name="tab_item" checked>
+        <label class="tab_item" for="tab1">旧楽天商品画像⇔SKUプロジェクト変換</label>
+        <input id="tab2" type="radio" name="tab_item">
+        <label class="tab_item" for="tab2">商品画像ビューアー(SKUプロジェクト対応)</label>
+        <div class="tab_content" id="tab1_content">
+            <div class="tab_content_description" id="old_new_wrap">
+                <header>
+                    <div>
+                        <label><input type="radio" name="shop1" value="bellevie-harima" checked>楽天ソムリエ</label>
+                        <label><input type="radio" name="shop1" value="patie">パティエ</label>
+                        <label><input type="radio" name="shop1" value="sommelier">家具のソムリエ</label>
+                        <label><input type="radio" name="shop1" value="babuuu">babuuu.</label>
+                    </div>
+                </header>
+
+                <main id="old_new">
+                    <section>
+                        <h2>楽天旧item.csvの商品画像URL部分</h2>
+                        <div>
+                            <textarea class="left"></textarea>
+                        </div>
+                    </section>
+                    <section class="arrow">⇔</section>
+                    <section>
+                        <h2>SKUプロジェクト対応版商品画像URL</h2>
+                        <textarea class="right"></textarea>
+                    </section>
+                </main>
+            </div>
+        </div>
+        <div class="tab_content" id="tab2_content">
+            <div class="tab_content_description" id="viewer_wrap">
+                <header>
+                    <div>
+                        <label><input type="radio" name="shop2" value="bellevie-harima" checked>楽天ソムリエ</label>
+                        <label><input type="radio" name="shop2" value="patie">パティエ</label>
+                        <label><input type="radio" name="shop2" value="sommelier">家具のソムリエ</label>
+                        <label><input type="radio" name="shop2" value="babuuu">babuuu.</label>
+                    </div>
+                </header>
+            
+                <main id="viewer">
+                    <section>
+                        <h2>csvから商品画像URLまたは画像タイプ(CABINET or GOLD)と画像パス(/aaa/bbb.jpg)部分をコピペ</h2>
+                        <div>
+                            <textarea class="left"></textarea>
+                        </div>
+                    </section>
+                    <section>
+                        <h2>結果表示欄</h2>
+                        <div class="right" contenteditable="false"></div>
+                    </section>
+                </main>
+
+            </div>
+        </div>
+    </div>
+
+
+<script>
+    const viewer_in_area = document.querySelector("#viewer textarea.left");
+    const viewer_out_area = document.querySelector("#viewer .right");
+    // ビューアー
+    viewer_in_area.addEventListener("input", () => {
+        let viewer_in_area_value = viewer_in_area.value;
+        let lines = viewer_in_area_value.split('\n');
+
+        const shop = document.querySelectorAll('input[name="shop2"]:checked');
+        const shop_code = shop[0].value;
+        let urls = "";
+
+        // 1行ずつ処理
+        for(let i=0; i<lines.length; i++) {
+            if (lines[i] === '') continue;
+
+            let url = "";
+            if (/^https/.test(lines[i])) {
+                // 旧商品画像URLを想定
+                // スペース区切りで分割
+                let columns = lines[i].split(' ');
+                for(let j=0; j<columns.length; j++) {
+                    url = columns[j];
+                    urls += `
+                        <div>
+                            <img src="${url}">
+                            <a href="${url}" target="_blank">${url}</a>
+                        </div>
+                        `;
+                }
+            }else{
+                // タブで分割して処理
+                let columns = lines[i].split('\t');
+                for(let j=0; j<columns.length; j++) {
+                    if (columns[j] === 'CABINET' || columns[j] === 'GOLD') {
+                        let path = columns[j + 1];
+                        if (columns[j] === 'CABINET') {
+                            url = `https://image.rakuten.co.jp/${shop_code}/cabinet${path}`;
+                        }else if(columns[j] === 'GOLD') {
+                            url = `https://www.rakuten.ne.jp/${shop_code}/gold${path}`;
+                        }
+                        // 次のセルがCABINETまたはGOLDか？
+                        if (columns[j + 2] === 'CABINET' || columns[j + 2] === 'GOLD') {
+                            j += 1;
+                        }else{
+                            // ALTを想定
+                            j += 2;
+                        }
+
+                        urls += `
+                        <div>
+                            <img src="${url}">
+                            <a href="${url}" target="_blank">${url}</a>
+                        </div>
+                        `;
+                    }
+                }
+            }
+        }
+
+        viewer_out_area.innerHTML = urls;
+    });
+
+
+    const old_new_in_area = document.querySelector("#old_new textarea.left");
+    const old_new_out_area = document.querySelector("#old_new .right");
+    // 旧item.csvの貼り付け
+    old_new_in_area.addEventListener("input", () => {
+        let old_new_in_area_value = old_new_in_area.value;
+        let lines = old_new_in_area_value.split('\n');
+
+        let urls = "";
+
+        // 1行ずつ処理
+        for(let i=0; i<lines.length; i++) {
+            if (lines[i] === '') continue;
+
+            // スペースで分割して処理
+            let columns = lines[i].split(' ');
+            for(let j=0; j<columns.length; j++) {
+                let path;
+                let type;
+                if (columns[j].includes('/cabinet/') === true) {
+                    // CABINET
+                    type = 'CABINET';
+                    path = columns[j].match('image.rakuten.co.jp/.+/cabinet(/.+)');
+                }else if (columns[j].includes('/gold/') === true) {
+                    // GOLD
+                    type = 'GOLD';
+                    path = columns[j].match('www.rakuten.ne.jp/gold/.+?(/.+)');
+                }else{
+                    // これはありえない
+                    alert("ありえない");
+                }
+console.log(columns[j]);
+console.log(path);
+                urls += `${type}\t${path[1]}\t\t`;
+            }
+            urls += "\n";
+        }
+
+        old_new_out_area.value = urls;
+    });
+
+    // SKUプロジェクト対応版csvの貼り付け
+    old_new_out_area.addEventListener("input", () => {
+        let old_new_out_area_value = old_new_out_area.value;
+        let lines = old_new_out_area_value.split('\n');
+
+        const shop = document.querySelectorAll('input[name="shop1"]:checked');
+        const shop_code = shop[0].value;
+        let urls = "";
+
+        // 1行ずつ処理
+        for(let i=0; i<lines.length; i++) {
+            if (lines[i] === '') continue;
+
+            let url = "";
+
+            // タブで分割して処理
+            let columns = lines[i].split('\t');
+            for(let j=0; j<columns.length; j++) {
+                if (columns[j] === 'CABINET' || columns[j] === 'GOLD') {
+                    let path = columns[j + 1];
+                    if (columns[j] === 'CABINET') {
+                        url = `https://image.rakuten.co.jp/${shop_code}/cabinet${path}`;
+                    }else if(columns[j] === 'GOLD') {
+                        url = `https://www.rakuten.ne.jp/${shop_code}/gold${path}`;
+                    }
+                    // 次のセルがCABINETまたはGOLDか？
+                    if (columns[j + 2] === 'CABINET' || columns[j + 2] === 'GOLD') {
+                        j += 1;
+                    }else{
+                        // ALTを想定
+                        j += 2;
+                    }
+
+                    urls += `${url} `;
+                }
+            }
+            urls = urls.trimEnd();
+            urls += "\n";
+        }
+
+        old_new_in_area.value = urls;
+    });
+</script>
+
+</body>
+</html>

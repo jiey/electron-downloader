@@ -27,6 +27,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // レンダラー → メイン
     showDownloaderWindow: () => ipcRenderer.send('show-downloader-window'),
     showItemEditWindow: () => ipcRenderer.send('show-item-edit-window'),
+    showItemImageURLWindow: () => ipcRenderer.send('show-item-image-url-window'),
+    copyToClipboard: (text) => ipcRenderer.send('copy-to-clipboard', text),
+    openPreview: (content) => ipcRenderer.send('open-preview', content),
 
     // レンダラー → メイン
     startDownload: (dl_lists, dl_folder_path, is_create_folder) => ipcRenderer.send('start-download', dl_lists, dl_folder_path, is_create_folder),
@@ -55,6 +58,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
     getRakutenInventories: async (r_item_sku_codes, shop_target) => {
         const res = await ipcRenderer.invoke('get-rakuten-inventories', r_item_sku_codes, shop_target)
+        return res;
+    },
+    getRakutenCategoryMappings: async (r_item_code, shop_targets) => {
+        const res = await ipcRenderer.invoke('get-rakuten-category_mappings', r_item_code, shop_targets)
         return res;
     },
     updateRakutenItem: async (r_item_code, post_data, shop_target) => {
@@ -101,6 +108,23 @@ contextBridge.exposeInMainWorld('renderAPI', {
         }
         return image_url;
     },
+    // 画像URLからキャビネットかGOLDのハッシュを返す関数
+    convertRakutenImageHash: (image_url) => {
+        let hash ={};
+        if (/^https:\/\/image\.rakuten\.co\.jp/.test(image_url)) {
+            hash.type = 'CABINET';
+            const ret = image_url.match(/\/cabinet(.+)/);
+            hash.location = ret[1];
+        }else if (/^https:\/\/www\.rakuten\.ne\.jp\/gold/.test(image_url)) {
+            hash.type = 'GOLD';
+            const ret = image_url.match(/\/gold\/.+?(\/.+)/);
+            hash.location = ret[1];
+        }else{
+            hash = undefined;
+        }
+ 
+        return hash;
+    },
     // 楽天の商品ページURLを返す関数
     makeRakutenItemURL: (item_code, shop_code, is_souko) => {
         let subdomain = "";
@@ -111,5 +135,48 @@ contextBridge.exposeInMainWorld('renderAPI', {
         }
         const item_url = `https://${subdomain}.rakuten.co.jp/${shop_code}/${item_code}/`;
         return item_url;
+    },
+    // 楽天RMSのURLを返す関数
+    makeRakutenRMSURL: (item_code, shop_id) => {
+        const item_url = `https://item.rms.rakuten.co.jp/rms-item/shops/${shop_id}/item/edit/${item_code}`;
+        return item_url;
+    },
+    // 通販する蔵の商品マスター検索URLを返す関数
+    makeSuruzoItemSearchURL: (item_code, shop_code) => {
+        const rakuten_shop_key = {
+            'bellevie-harima': 'r__seek_rakuten_code',
+            'patie': 'e__seek_rakuten_code',
+            'sommelier': 'f__seek_rakuten_code',
+            'babuuu': 'j__seek_rakuten_code',
+        }
+
+        const shop_key = rakuten_shop_key[shop_code];
+
+        const item_url = `https://sv302.suruzo.biz/bellevie-1121/master/goods_synchro/goods_control.php?job=goodsSearch&searchType=all&searchType=normal&${shop_key}=${item_code}`;
+        return item_url;
+    },
+    // 日時フォーマットを変換
+    formatDateTime(input, format) {
+        const date = new Date(input);
+    
+        const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+    
+        const replacements = {
+            'YYYY': date.getFullYear(),
+            'MM': (date.getMonth() + 1).toString().padStart(2, '0'),
+            'DD': date.getDate().toString().padStart(2, '0'),
+            'HH': date.getHours().toString().padStart(2, '0'),
+            'mm': date.getMinutes().toString().padStart(2, '0'),
+            'ss': date.getSeconds().toString().padStart(2, '0'),
+            'ddd': dayNames[date.getDay()]
+        };
+    
+        let formattedDate = format;
+    
+        for (const key in replacements) {
+            formattedDate = formattedDate.replace(key, replacements[key]);
+        }
+    
+        return formattedDate;
     }
 })

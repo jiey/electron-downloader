@@ -8,4 +8,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     menu_item_edit.addEventListener('click', () => {
         window.electronAPI.showItemEditWindow();
     });
+
+    const menu_item_image_url = document.querySelector('#item_image_url');
+    menu_item_image_url.addEventListener('click', () => {
+        window.electronAPI.showItemImageURLWindow();
+    });
 });

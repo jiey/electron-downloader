@@ -22,12 +22,12 @@
     "electron": "^25.3.1"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^6.5.1",
     "axios": "^1.5.0",
     "electron-dl": "^3.5.0",
     "electron-log": "^4.4.8",
     "electron-squirrel-startup": "^1.0.0",
     "electron-store": "^8.1.0",
-    "encoding-japanese": "^2.0.0"
+    "encoding-japanese": "^2.0.0",
+    "font-awesome": "^4.7.0"
   }
 }
