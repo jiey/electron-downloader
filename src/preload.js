@@ -68,8 +68,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
         const res = await ipcRenderer.invoke('update-rakuten-item', r_item_code, post_data, shop_target)
         return res;
     },
-    getImage: async (r_item_code, shop_targets) => {
-        const res = await ipcRenderer.invoke('get-image', r_item_code, shop_targets)
+    getImage: async (r_item_code, shop_targets, item_kinds) => {
+        const res = await ipcRenderer.invoke('get-image', r_item_code, shop_targets, item_kinds)
         return res;
     },
     searchInPage: (search_word, mode) => {
@@ -180,3 +180,4 @@ contextBridge.exposeInMainWorld('renderAPI', {
         return formattedDate;
     }
 })
+

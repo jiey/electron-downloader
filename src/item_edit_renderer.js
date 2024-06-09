@@ -999,38 +999,38 @@ console.log(cat_res);
             div_parent.appendChild(div_field);
         }
 
-        // あす楽管理番号
-        div_field_name = window.renderAPI.createHTMLElement('div', {class: 'grid-cell'}, 'あす楽配送管理番号');
-        div_parent.appendChild(div_field_name);
-        for(let shop_code_inner in res) {
-            const rms_data = res[shop_code_inner];
-            div_field = window.renderAPI.createHTMLElement('div', {class: 'grid-cell'});
+        // あす楽管理番号(2024/7/16 API廃止)
+        // div_field_name = window.renderAPI.createHTMLElement('div', {class: 'grid-cell'}, 'あす楽配送管理番号');
+        // div_parent.appendChild(div_field_name);
+        // for(let shop_code_inner in res) {
+        //     const rms_data = res[shop_code_inner];
+        //     div_field = window.renderAPI.createHTMLElement('div', {class: 'grid-cell'});
 
-            // SKU内で値が全て同じかチェック
-            let is_same_value = true;
-            let target_value = undefined;
-            for(let [sku_code, sku_info] of Object.entries(rms_data.variants)) {
-                if (target_value === undefined) {
-                    target_value = sku_info.asurakuDeliveryId;
-                }else{
-                    if (target_value !== sku_info.asurakuDeliveryId) {
-                        // 値が異なるのでフラグをOFFに
-                        is_same_value = false;
-                    }
-                }
-            }
-            // SKU内の値が全て同じ場合
-            if (is_same_value) {
-                // SKU内の値が全て同じ場合
-            }else{
-                // SKU内の値が異なる場合
-                target_value = "SKUごとに異なる";
-            }
-            if (target_value === undefined) target_value = '';
-            const input_field = window.renderAPI.createHTMLElement('input', {type: 'text', class: 'small', name: `${shop_code_inner}_asurakuDeliveryId`, value: target_value});
-            div_field.appendChild(input_field);
-            div_parent.appendChild(div_field);
-        }
+        //     // SKU内で値が全て同じかチェック
+        //     let is_same_value = true;
+        //     let target_value = undefined;
+        //     for(let [sku_code, sku_info] of Object.entries(rms_data.variants)) {
+        //         if (target_value === undefined) {
+        //             target_value = sku_info.asurakuDeliveryId;
+        //         }else{
+        //             if (target_value !== sku_info.asurakuDeliveryId) {
+        //                 // 値が異なるのでフラグをOFFに
+        //                 is_same_value = false;
+        //             }
+        //         }
+        //     }
+        //     // SKU内の値が全て同じ場合
+        //     if (is_same_value) {
+        //         // SKU内の値が全て同じ場合
+        //     }else{
+        //         // SKU内の値が異なる場合
+        //         target_value = "SKUごとに異なる";
+        //     }
+        //     if (target_value === undefined) target_value = '';
+        //     const input_field = window.renderAPI.createHTMLElement('input', {type: 'text', class: 'small', name: `${shop_code_inner}_asurakuDeliveryId`, value: target_value});
+        //     div_field.appendChild(input_field);
+        //     div_parent.appendChild(div_field);
+        // }
 
         // 在庫あり時納期管理番号
         div_field_name = window.renderAPI.createHTMLElement('div', {class: 'grid-cell'}, '在庫あり時納期管理番号');

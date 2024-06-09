@@ -10,6 +10,7 @@
         }
         h2 {
             font-size: 1.2rem;
+            margin-bottom: 0.4rem;
         }
         h3 {
             font-size: 1.1rem;
@@ -28,11 +29,13 @@
             width: 100%;
             height: 100px;
         }
-
+        textarea#r_item_code {
+            height: 5rem;
+        }
         input#dl_path {
             width: 600px;
         }
-        button#dl_button {
+        button.btn {
             font-size: 18px;
             width: 200px;
             height: 40px;
@@ -151,8 +154,25 @@
             font-size: 14px;
             font-weight: bold;
         }
-        #fixed_item_code, .toggle {
+        #fixed_item_code {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+
+            & div:nth-child(4) {
+                grid-column: span 3;
+            }
+        }
+        .toggle_yoko {
             display: flex;
+        }
+        div.fieldset {
+            border: 1px solid #999;
+            border-radius: 4px;
+            padding: 0.5rem;
+        }
+        .tlr {
+            text-align: right;
         }
 </style>
 </head>
@@ -171,7 +191,7 @@
         </div>
         <div>
             <h2>画像の保存方法</h2>
-            <div class="toggle">
+            <div class="toggle_yoko">
                 <label class="checkbox_obj">
                     <input type="checkbox" name="is_create_folder" id="is_create_folder" class="checkbox_real" checked>
                     <span class="checkbox_dummy"></span>
@@ -184,32 +204,61 @@
     <hr>
     <h2>楽天商品画像URL取得</h2>
     <section id="fixed_item_code">
-        <div class="toggle">
-            <label class="checkbox_obj">
-                <input type="checkbox" name="item_target" class="checkbox_real" value="r_somurie" checked>
-                <span class="checkbox_dummy"></span>
-                <span class="checkbox_label">ソムリエ</span>
-            </label>
-            <label class="checkbox_obj">
-                <input type="checkbox" name="item_target" class="checkbox_real" value="r_patie">
-                <span class="checkbox_dummy"></span>
-                <span class="checkbox_label">パティエ</span>
-            </label>
-            <label class="checkbox_obj">
-                <input type="checkbox" name="item_target" class="checkbox_real" value="r_kagu">
-                <span class="checkbox_dummy"></span>
-                <span class="checkbox_label">家具のソムリエ</span>
-            </label>
-            <label class="checkbox_obj">
-                <input type="checkbox" name="item_target" class="checkbox_real" value="r_babuuu">
-                <span class="checkbox_dummy"></span>
-                <span class="checkbox_label">babuuu.</span>
-            </label>
+        <div class="fieldset">
+            <div>取得対象ショップ</div>
+            <div>
+                <label class="checkbox_obj">
+                    <input type="checkbox" name="item_target" class="checkbox_real" value="r_somurie" checked>
+                    <span class="checkbox_dummy"></span>
+                    <span class="checkbox_label">ソムリエ</span>
+                </label>
+                <label class="checkbox_obj">
+                    <input type="checkbox" name="item_target" class="checkbox_real" value="r_patie">
+                    <span class="checkbox_dummy"></span>
+                    <span class="checkbox_label">パティエ</span>
+                </label>
+                <label class="checkbox_obj">
+                    <input type="checkbox" name="item_target" class="checkbox_real" value="r_kagu">
+                    <span class="checkbox_dummy"></span>
+                    <span class="checkbox_label">家具のソムリエ</span>
+                </label>
+                <label class="checkbox_obj">
+                    <input type="checkbox" name="item_target" class="checkbox_real" value="r_babuuu">
+                    <span class="checkbox_dummy"></span>
+                    <span class="checkbox_label">babuuu.</span>
+                </label>
+            </div>
         </div>
-        <div>
+
+        <div class="fieldset">
+            <div>取得対象データ</div>
+            <div>
+                <label class="checkbox_obj">
+                    <input type="checkbox" name="item_kind" class="checkbox_real" value="item" checked>
+                    <span class="checkbox_dummy"></span>
+                    <span class="checkbox_label">商品画像</span>
+                </label>
+                <label class="checkbox_obj">
+                    <input type="checkbox" name="item_kind" class="checkbox_real" value="white" checked>
+                    <span class="checkbox_dummy"></span>
+                    <span class="checkbox_label">白画像</span>
+                </label>
+                <label class="checkbox_obj">
+                    <input type="checkbox" name="item_kind" class="checkbox_real" value="sku" checked>
+                    <span class="checkbox_dummy"></span>
+                    <span class="checkbox_label">SKU画像</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="fieldset">
+            <div>商品管理番号</div>
             <textarea id="r_item_code"></textarea>
-            <button type="button" id="r_image_get">画像取得</button>
+        </div>
+
+        <div class="tlr">
             <span id="image_get_status"></span>
+            <button type="button" id="r_image_get" class="btn">画像取得</button>
         </div>
     </section>
 
@@ -217,7 +266,7 @@
     <textarea id="dl_target" placeholder="ここにURLを貼り付ける"></textarea>
 
     <div id="menu">
-        <button id="dl_button">ダウンロード開始</button>
+        <button id="dl_button" class="btn">ダウンロード開始</button>
     </div>
 
     <hr>

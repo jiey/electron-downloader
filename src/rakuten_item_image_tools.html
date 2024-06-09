@@ -194,13 +194,19 @@
                             j += 2;
                         }
 
-                        urls += `
+                    }else{
+                        // pathのみの場合。CABINETであることを想定
+                        let path = columns[j];
+                        url = `https://image.rakuten.co.jp/${shop_code}/cabinet${path}`;
+                    }
+
+                    urls += `
                         <div>
                             <img src="${url}">
                             <a href="${url}" target="_blank">${url}</a>
                         </div>
                         `;
-                    }
+
                 }
             }
         }
@@ -282,8 +288,13 @@ console.log(path);
                         j += 2;
                     }
 
-                    urls += `${url} `;
+                }else{
+                    // pathのみの場合。CABINETであることを想定
+                    let path = columns[j];
+                    url = `https://image.rakuten.co.jp/${shop_code}/cabinet${path}`;
                 }
+
+                urls += `${url} `;
             }
             urls = urls.trimEnd();
             urls += "\n";

@@ -864,7 +864,7 @@ ipcMain.on('stop-search-in-page', (event, action) => {
 
 // downloader_renderer.js
 // 楽天商品画像を取得
-ipcMain.handle('get-image', async (event, r_item_code, shop_targets) => {
+ipcMain.handle('get-image', async (event, r_item_code, shop_targets, item_kinds) => {
     let result = new Array();
 
     // ショップの数だけ回す
@@ -894,31 +894,49 @@ console.log("serviceSecret:", serviceSecret);
         
                 console.log(res);
                 // 商品画像取得
-                const item_images = res.data.images;
-        
-                for(let i=0; i<item_images.length; i++) {
-                    let img_url = "";
-                    if (item_images[i].type === 'CABINET') {
-                        img_url = `https://image.rakuten.co.jp/${shop_info[shop_incode].shop_code}/cabinet${item_images[i].location}`;
-                    }else if (item_images[i].type === 'GOLD') {
-                        img_url = `https://www.rakuten.ne.jp/gold/${shop_info[shop_incode].shop_code}${item_images[i].location}`;
+                if (item_kinds.includes("item")) {
+                    const item_images = res.data.images;
+            
+                    for(let i=0; i<item_images.length; i++) {
+                        let img_url = "";
+                        if (item_images[i].type === 'CABINET') {
+                            img_url = `https://image.rakuten.co.jp/${shop_info[shop_incode].shop_code}/cabinet${item_images[i].location}`;
+                        }else if (item_images[i].type === 'GOLD') {
+                            img_url = `https://www.rakuten.ne.jp/gold/${shop_info[shop_incode].shop_code}${item_images[i].location}`;
+                        }
+                        result.push(img_url);
                     }
-                    result.push(img_url);
+                }
+
+                // 白画像
+                if (item_kinds.includes("white")) {
+                    const white_image = res.data.whiteBgImage;
+                    if (white_image) {
+                        let img_url = "";
+                        if (white_image.type === 'CABINET') {
+                            img_url = `https://image.rakuten.co.jp/${shop_info[shop_incode].shop_code}/cabinet${white_image.location}`;
+                        }else if (white_image.type === 'GOLD') {
+                            img_url = `https://www.rakuten.ne.jp/gold/${shop_info[shop_incode].shop_code}${white_image.location}`;
+                        }
+                        result.push(img_url);
+                    }
                 }
 
                 // SKU画像取得
-                if (res.data.variants) {
-                    for(const key in res.data.variants) {
-                        const sku_images = res.data.variants[key].images;
-                        if (sku_images) {
-                            for(let i=0; i<sku_images.length; i++) {
-                                let img_url = "";
-                                if (sku_images[i].type === 'CABINET') {
-                                    img_url = `https://image.rakuten.co.jp/${shop_info[shop_incode].shop_code}/cabinet${sku_images[i].location}`;
-                                }else if (sku_images[i].type === 'GOLD') {
-                                    img_url = `https://www.rakuten.ne.jp/gold/${shop_info[shop_incode].shop_code}${sku_images[i].location}`;
+                if (item_kinds.includes("sku")) {
+                    if (res.data.variants) {
+                        for(const key in res.data.variants) {
+                            const sku_images = res.data.variants[key].images;
+                            if (sku_images) {
+                                for(let i=0; i<sku_images.length; i++) {
+                                    let img_url = "";
+                                    if (sku_images[i].type === 'CABINET') {
+                                        img_url = `https://image.rakuten.co.jp/${shop_info[shop_incode].shop_code}/cabinet${sku_images[i].location}`;
+                                    }else if (sku_images[i].type === 'GOLD') {
+                                        img_url = `https://www.rakuten.ne.jp/gold/${shop_info[shop_incode].shop_code}${sku_images[i].location}`;
+                                    }
+                                    result.push(img_url);
                                 }
-                                result.push(img_url);
                             }
                         }
                     }
@@ -938,6 +956,10 @@ console.log("serviceSecret:", serviceSecret);
                     // 同時接続数を超過
                     await sleep(500); // 500ms待機
                     continue;
+                }else if (/404/.test(err.message)) {
+                    // 商品が存在しない
+                    event.sender.send('something_notify', `${shop_info[shop_incode].shop_name}に${r_item_code}がありません`); // エラー通知
+                    break;
                 }
                 throw err;
             }

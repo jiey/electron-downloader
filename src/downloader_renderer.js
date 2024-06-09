@@ -117,7 +117,13 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
     })
 
-    // 認証エラー発生通知
+    // 汎用エラー発生通知
+    window.electronAPI.on('something_notify', (event, url)=>{
+        console.log("something error" + url);
+        alert(`エラー発生：${url}`);
+    });
+
+        // 認証エラー発生通知
     window.electronAPI.on('auth_error', (event, url)=>{
         console.log("auth_error" + url);
         status_area.textContent = `認証エラー発生：${url}`;
@@ -171,14 +177,15 @@ window.addEventListener('DOMContentLoaded', async () => {
         const set = new Set(dl_item_codes); // Setに入れて
         const new_dl_item_codes = [...set]; // 配列に戻すだけで重複削除される 
 
+        // ダウンロード対象データを取得
+        const item_kinds = Array.from(document.querySelectorAll('[name="item_kind"]:checked')).map(item_kind => item_kind.value);
+
         // 対象モールを取得
         const shop_targets = new Array();
         const item_targets = document.querySelectorAll('[name="item_target"]:checked');
         for (const item_target of item_targets) {
-            // if (item_target.checked) {
-                const shop_target = item_target.value;
-                shop_targets.push(shop_target);
-            // }
+            const shop_target = item_target.value;
+            shop_targets.push(shop_target);
         }
 
         if (shop_targets.length == 0) {
@@ -200,7 +207,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     
             // 商品画像取得
             try {
-                const item_images = await window.electronAPI.getImage(r_item_code, shop_targets);
+                const item_images = await window.electronAPI.getImage(r_item_code, shop_targets, item_kinds);
                 // 改行区切りにしてテキストエリアに戻す
                 img_urls += item_images.join('\n');
                 img_urls += "\n";
