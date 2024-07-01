@@ -68,6 +68,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
         const res = await ipcRenderer.invoke('update-rakuten-item', r_item_code, post_data, shop_target)
         return res;
     },
+    cabinetGetFolderId: async (path, shop_targets) => {
+        const res = await ipcRenderer.invoke('cabinet-get-folder-id', path, shop_targets)
+        return res;
+    },
     getImage: async (r_item_code, shop_targets, item_kinds) => {
         const res = await ipcRenderer.invoke('get-image', r_item_code, shop_targets, item_kinds)
         return res;

@@ -91,6 +91,10 @@ console.log("プリザンターから再取得する");
     console.log(webapi_keys.webapi);
 }
 
+// CabinetAPIライブラリ準備
+const RmsAPIClass = require('./rmsAPI.js');
+const rmsAPI = new RmsAPIClass(webapi_keys.webapi);
+
 // 設定画面定義
 function openSettingsWindow() {
     let settingsWindow = new BrowserWindow({
@@ -1026,6 +1030,28 @@ ipcMain.on('set-config-dl_path', (event, dl_path) => {
 // フォルダ選択
 ipcMain.handle('choose-folder-path', handleFileOpen);
 
+// 【CABINET】指定パスのフォルダIDを取得
+ipcMain.handle('cabinet-get-folder-id', (event, path, shop_targets) => {
+    // ショップの数だけ回す
+    for(let shop_count = 0; shop_count < shop_targets.length; shop_count++) {
+        const shop_incode = shop_targets[shop_count];
+        try{
+            rmsAPI.get_folder_list(shop_incode);
+        }catch(e) {
+            console.error(e.message());
+        }
+    }
+    return;
+});
+
+// 【CABINET】フォルダ内のファイル一覧を取得
+ipcMain.handle('cabinet-get-file-list', (event, {folderId, offset, limit}) => {
+    try{
+        return rmsAPI.get_file_list({folderId: folderId, offset: offset, limit: limit});
+    }catch(e) {
+        console.error(e.message());
+    }
+});
 
 // ダウンロード中断（フラグを立てる）
 ipcMain.on('interrupt-download', (event) => {

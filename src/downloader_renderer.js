@@ -1,5 +1,5 @@
 window.addEventListener('DOMContentLoaded', async () => {
-
+    await window.electronAPI.cabinetGetFolderId('/', ['r_somurie']);
 
     async function getConfig() {
         // 設定を取得
